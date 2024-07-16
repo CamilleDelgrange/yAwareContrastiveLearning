@@ -1,0 +1,15 @@
+name: my_env
+dependencies:
+  - python=3.8
+  - pip
+  - numpy
+  - pandas
+  - scikit-image
+  - scikit-learn
+  - scipy
+  - pip:
+    - torch
+    - tqdm
+    - umap-learn
+    - matplotlib
+    - importlib-metadata

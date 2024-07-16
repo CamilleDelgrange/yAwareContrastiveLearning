@@ -6,7 +6,6 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as func
 from sklearn.metrics.pairwise import rbf_kernel
-import numpy as np
 
 class GeneralizedSupervisedNTXenLoss(nn.Module):
     def __init__(self, kernel='rbf', temperature=0.1, return_logits=False, sigma=1.0):

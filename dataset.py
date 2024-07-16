@@ -40,21 +40,22 @@ class MRIDataset(Dataset):
             format(config.input_size)
 
     def collate_fn(self, list_samples):
-        list_x = torch.stack([torch.as_tensor(x, dtype=torch.float) for (x, y) in list_samples], dim=0)
-        list_y = torch.stack([torch.as_tensor(y, dtype=torch.float) for (x, y) in list_samples], dim=0)
+        list_x = torch.stack([torch.as_tensor(x, dtype=torch.float) for (x, y, dx) in list_samples], dim=0)
+        list_y = torch.stack([torch.as_tensor(y, dtype=torch.float) for (x, y, dx) in list_samples], dim=0)
+        list_dx = torch.stack([torch.as_tensor(dx, dtype=torch.long) for (x, y, dx) in list_samples], dim=0)
 
-        return (list_x, list_y)
+        return (list_x, list_y, list_dx)
 
     def __getitem__(self, idx):
-
         # For a single input x, samples (t, t') ~ T to generate (t(x), t'(x))
         np.random.seed()
-        x1 = self.transforms(self.data[idx])
-        x2 = self.transforms(self.data[idx])
-        labels = self.labels[self.config.label_name].values[idx]
+        x1 = self.transforms(self.data[idx]) #augmented view 1 
+        x2 = self.transforms(self.data[idx]) #augmented view 2
+        labels = self.labels[self.config.label_name].values[idx] #labelname
         x = np.stack((x1, x2), axis=0)
+        dx = self.labels.loc[idx, 'stroke']
 
-        return (x, labels)
+        return (x, labels, dx)
 
     def __len__(self):
         return len(self.data)

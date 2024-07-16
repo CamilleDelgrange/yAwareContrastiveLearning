@@ -1,6 +1,7 @@
 import numpy as np
 from dataset import MRIDataset
-from torch.utils.data import DataLoader, Dataset, RandomSampler
+from dataset_finetuning import FineTuneMRIDataset
+from torch.utils.data import DataLoader, RandomSampler
 from yAwareContrastiveLearning import yAwareCLModel
 from losses import GeneralizedSupervisedNTXenLoss
 from torch.nn import CrossEntropyLoss
@@ -8,9 +9,20 @@ from models.densenet import densenet121
 from models.unet import UNet
 import argparse
 from config import Config, PRETRAINING, FINE_TUNING
-
+import umap
+#import importlib.metadata
 
 if __name__ == "__main__":
+
+    # Get the version of umap-learn
+    #umap_version = umap.__version__
+
+    # Get the version of importlib-metadata
+    #importlib_metadata_version = importlib.metadata.version('importlib-metadata')
+
+    #print(f"UMAP version: {umap_version}")
+    #print(f"importlib-metadata version: {importlib_metadata_version}")
+
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--mode", type=str, choices=["pretraining", "finetuning"], required=True,
@@ -20,14 +32,14 @@ if __name__ == "__main__":
 
     config = Config(mode)
 
-    if config.mode == mode:
+    if config.mode == PRETRAINING:
         dataset_train = MRIDataset(config, training=True)
         dataset_val = MRIDataset(config, validation=True)
     else:
         ## Fill with your target dataset
-        dataset_train = Dataset()
-        dataset_val = Dataset()
-
+        dataset_train = FineTuneMRIDataset(config, training=True)
+        dataset_val = FineTuneMRIDataset(config, validation=True)
+        
     loader_train = DataLoader(dataset_train,
                               batch_size=config.batch_size,
                               sampler=RandomSampler(dataset_train),
@@ -61,6 +73,9 @@ if __name__ == "__main__":
                                               kernel='rbf',
                                               sigma=config.sigma,
                                               return_logits=True)
+        #loss = NTXenLoss(temperature=config.temperature,
+                            #return_logits=True) # This is normal contrastive learning!
+
     elif config.mode == FINE_TUNING:
         loss = CrossEntropyLoss()
 
